@@ -16,22 +16,22 @@ class SignInPage extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(16),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Container(
-            color: Colors.orange,
-            child: SizedBox(
-              height: 100,
-            ),
+          Text(
+            "Sign In",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 32.0, fontWeight: FontWeight.w600),
           ),
-          SizedBox(height: 8.0,),
+          SizedBox(height: 8.0),
           Container(
             color: Colors.red,
             child: SizedBox(
               height: 100,
             ),
           ),
-          SizedBox(height: 8.0,),
+          SizedBox(height: 8.0),
           Container(
             color: Colors.purple,
             child: SizedBox(
