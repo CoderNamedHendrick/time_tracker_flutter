@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:time_tracker_flutter/app/home_page.dart';
@@ -10,8 +12,14 @@ class LandingPage extends StatefulWidget{
 }
 
 class _LandingPageState extends State<LandingPage>{
-
   User _user;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _updateUser(FirebaseAuth.instance.currentUser);
+  }
 
   void _updateUser(User user){
     setState(() {
@@ -25,6 +33,8 @@ class _LandingPageState extends State<LandingPage>{
       return SignInPage(
         onSignIn: _updateUser,
       );
-    return HomePage();
+    return HomePage(
+      onSignOut: () => _updateUser(null),
+    );
   }
 }
