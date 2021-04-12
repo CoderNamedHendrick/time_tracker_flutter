@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter/app/signin/email_signin_form.dart';
-import 'package:time_tracker_flutter/services/auth_provider.dart';
+import 'package:time_tracker_flutter/services/auth.dart';
 
 class EmailSignInPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final auth = AuthProvider.of(context);
+    final auth = Provider.of<AuthBase>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text("Time Tracker"),
