@@ -2,12 +2,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter/app/signin/email_signin_page.dart';
+import 'package:time_tracker_flutter/app/signin/sign_in_bloc.dart';
 import 'package:time_tracker_flutter/common_widgets/show_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter/common_widgets/sign_in_button.dart';
 import 'package:time_tracker_flutter/common_widgets/social_signin_button.dart';
 import 'package:time_tracker_flutter/services/auth.dart';
 
 class SignInPage extends StatefulWidget {
+  static Widget create(BuildContext context){
+    return Provider<SignInBloc>(
+      create: (_) => SignInBloc(),
+      child: SignInPage(),
+    );
+  }
+
   @override
   _SignInPageState createState() => _SignInPageState();
 }
@@ -74,17 +82,23 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    final bloc = Provider.of<SignInBloc>(context, listen: false);
+    return Scaffold(appBar: AppBar(
         title: Text("Time Tracker"),
         elevation: 2.0,
       ),
-      body: _buildContent(context),
+      body: StreamBuilder<bool>(
+        stream: bloc.isLoadingStream,
+        initialData: false,
+        builder: (context, snapshot) {
+          return _buildContent(context, snapshot.data);
+        }
+      ),
       backgroundColor: Colors.grey[200],
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool isLoading) {
     return Padding(
       padding: EdgeInsets.all(16),
       child: Column(
