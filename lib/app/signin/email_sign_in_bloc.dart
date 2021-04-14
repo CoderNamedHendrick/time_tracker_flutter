@@ -27,7 +27,7 @@ class EmailSignInBloc {
       isLoading: isLoading,
       submitted: submitted,
     );
-    // add updated model to _modelController
+    // add updated model to _modelController.
     _modelController.add(_model);
   }
 }
