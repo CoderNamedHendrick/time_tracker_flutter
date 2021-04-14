@@ -20,9 +20,8 @@ class SignInBloc {
       _setIsLoading(true);
       return await signInMethod();
     } catch(e) {
-      rethrow;
-    } finally{
       _setIsLoading(false);
+      rethrow;
     }
   }
   Future<User> signInWithGoogle() async => await _signIn(auth.signInWithGoogle);
