@@ -36,11 +36,6 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
-  String get _email => _emailController.text;
-  String get _password => _passwordController.text;
-  EmailSignInFormType _formType = EmailSignInFormType.signIn;
-  bool _submitted = false;
-  bool _isLoading = false;
 
   @override
   void dispose(){
@@ -52,17 +47,8 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
   }
 
   Future<void> _submit() async {
-    setState(() {
-      _submitted = true;
-      _isLoading = true;
-    });
     try {
-      final auth = Provider.of<AuthBase>(context, listen: false);
-      if (_formType == EmailSignInFormType.signIn) {
-        await auth.signInWithEmailAndPassword(_email, _password);
-      } else {
-        await auth.createUserWithEmailAndPassword(_email, _password);
-      }
+      await widget.bloc.submit();
       Navigator.of(context).pop();
     } on FirebaseAuthException catch (e) {
       showExceptionAlertDialog(
@@ -70,98 +56,99 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
         title: 'Sign in failed',
         exception: e,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
-  void _emailEditingComplete() {
-    final newFocus = widget.emailValidator.isValid(_email)
+  void _emailEditingComplete(EmailSignInModel model) {
+    final newFocus = widget.emailValidator.isValid(model.email)
         ? _passwordFocusNode
         : _emailFocusNode;
     FocusScope.of(context).requestFocus(newFocus);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final primaryText = _formType == EmailSignInFormType.signIn
+  void _toggleFormType(EmailSignInModel model) {
+    widget.bloc.updateWith(
+      email: '',
+      password: '',
+      formType: model.formType == EmailSignInFormType.signIn
+          ? EmailSignInFormType.register
+          : EmailSignInFormType.signIn,
+      isLoading: false,
+      submitted: false,
+    );
+    _emailController.clear();
+    _passwordController.clear();
+  }
+
+  List<Widget> _buildChildren(EmailSignInModel model) {
+    final primaryText = model.formType == EmailSignInFormType.signIn
         ? 'Sign in'
         : 'Create an account';
-    final secondaryText = _formType == EmailSignInFormType.signIn
+    final secondaryText = model.formType == EmailSignInFormType.signIn
         ? 'Need an account? Register'
         : 'Have an account? Sign in';
 
-    void _toggleFormType() {
-      setState(() {
-        _submitted = false;
-        _formType = _formType == EmailSignInFormType.signIn
-            ? EmailSignInFormType.register
-            : EmailSignInFormType.signIn;
-      });
-      _emailController.clear();
-      _passwordController.clear();
-    }
+    bool submitEnabled = widget.emailValidator.isValid(model.email) &&
+        widget.passwordValidator.isValid(model.password) &&
+        !model.isLoading;
 
-    List<Widget> _buildChildren() {
-      bool submitEnabled = widget.emailValidator.isValid(_email) &&
-          widget.passwordValidator.isValid(_password) &&
-          !_isLoading;
+    return [
+      _buildEmailTextField(model),
+      SizedBox(height: 8.0),
+      buildPasswordTextField(model),
+      SizedBox(height: 8.0),
+      FormSubmitButton(
+        text: primaryText,
+        onPressed: submitEnabled ? _submit : null,
+      ),
+      SizedBox(height: 8.0),
+      FlatButton(
+        child: Text(secondaryText),
+        onPressed: !model.isLoading ? ()=> _toggleFormType(model) : null,
+      )
+    ];
+  }
 
-      return [
-        _buildEmailTextField(),
-        SizedBox(height: 8.0),
-        buildPasswordTextField(),
-        SizedBox(height: 8.0),
-        FormSubmitButton(
-          text: primaryText,
-          onPressed: submitEnabled ? _submit : null,
-        ),
-        SizedBox(height: 8.0),
-        FlatButton(
-          child: Text(secondaryText),
-          onPressed: !_isLoading ? _toggleFormType : null,
-        )
-      ];
-    }
+  @override
+  Widget build(BuildContext context) {
 
     return StreamBuilder<EmailSignInModel>(
       stream: widget.bloc.modelStream,
       initialData: EmailSignInModel(),
       builder: (context, snapshot) {
+        final EmailSignInModel model = snapshot.data;
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
-            children: _buildChildren(),
+            children: _buildChildren(model),
           ),
         );
       }
     );
   }
 
-  TextField buildPasswordTextField() {
+  TextField buildPasswordTextField(EmailSignInModel model) {
     bool showErrorText =
-        _submitted && !widget.passwordValidator.isValid(_password);
+        model.submitted && !widget.passwordValidator.isValid(model.password);
     return TextField(
       controller: _passwordController,
       focusNode: _passwordFocusNode,
       decoration: InputDecoration(
         labelText: 'Password',
         errorText: showErrorText ? widget.invalidPasswordErrorText : null,
-        enabled: _isLoading == false,
+        enabled: model.isLoading == false,
       ),
       obscureText: true,
       textInputAction: TextInputAction.done,
-      onChanged: (password) => _updateState(),
+      onChanged: (password) => widget.bloc.updateWith(password: password),
       onEditingComplete: _submit,
     );
   }
 
-  TextField _buildEmailTextField() {
-    bool showErrorText = _submitted && !widget.emailValidator.isValid(_email);
+  TextField _buildEmailTextField(EmailSignInModel model) {
+    bool showErrorText = model.submitted && !widget.emailValidator.isValid(model.email);
     return TextField(
       controller: _emailController,
       focusNode: _emailFocusNode,
@@ -173,13 +160,10 @@ class _EmailSignInFormBlocBasedState extends State<EmailSignInFormBlocBased> {
       autocorrect: false,
       keyboardType: TextInputType.emailAddress,
       textInputAction: TextInputAction.next,
-      onChanged: (email) => _updateState(),
-      onEditingComplete: _emailEditingComplete,
-      enabled: _isLoading == false,
+      onChanged: (email) => widget.bloc.updateWith(email: email),
+      onEditingComplete: () => _emailEditingComplete(model),
+      enabled: model.isLoading == false,
     );
   }
 
-  void _updateState() {
-    setState(() {});
-  }
 }
