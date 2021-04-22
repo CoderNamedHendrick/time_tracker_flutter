@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter/common_widgets/show_alert_dialog.dart';
 import 'package:time_tracker_flutter/services/auth.dart';
 import 'package:time_tracker_flutter/services/auth_provider.dart';
+import 'package:time_tracker_flutter/services/database.dart';
 
 class JobsPage extends StatelessWidget {
 
@@ -28,8 +29,15 @@ class JobsPage extends StatelessWidget {
     }
   }
 
-  void _createJob(){
-
+  Future<void> _createJob(BuildContext context) async{
+    print(
+      "Create job method called"
+    );
+    final database = Provider.of<Database>(context, listen: false);
+    await database.createJob({
+      'name': 'Blogging',
+      'ratePerHour': 10,
+    });
   }
 
   @override
@@ -52,7 +60,7 @@ class JobsPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: _createJob,
+        onPressed: () => _createJob(context),
       ),
     );
   }
