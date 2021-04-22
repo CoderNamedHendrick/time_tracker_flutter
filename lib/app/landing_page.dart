@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:time_tracker_flutter/app/home_page.dart';
+import 'file:///C:/Users/Hendrick/AndroidStudioProjects/time_tracker_flutter/lib/app/home/jobs_page.dart';
 import 'package:time_tracker_flutter/app/signin/signin_page.dart';
 import 'package:time_tracker_flutter/services/auth.dart';
 
@@ -17,7 +17,7 @@ class LandingPage extends StatelessWidget{
             final User user = snapshot.data;
             if (user == null)
               return SignInPage.create(context);
-            return HomePage();
+            return JobsPage();
           }
           return Scaffold(
             body: Center(
