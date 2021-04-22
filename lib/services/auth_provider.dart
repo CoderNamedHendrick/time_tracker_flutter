@@ -3,7 +3,7 @@ import 'package:time_tracker_flutter/services/auth.dart';
 
 
 class AuthProvider extends InheritedWidget{
-  AuthProvider({@required this.auth, @required this.child});
+  AuthProvider({@required this.auth, @required this.child}) : super();
   final AuthBase auth;
   final Widget child;
 
