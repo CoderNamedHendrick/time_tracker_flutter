@@ -6,7 +6,7 @@ import 'package:time_tracker_flutter/services/api_path.dart';
 
 abstract class Database {
   Future<void> createJob(Job job);
-  void jobsStream();
+  Stream<List<Job>> jobsStream();
 }
 
 class FirestoreDatabase implements Database {
@@ -24,15 +24,17 @@ class FirestoreDatabase implements Database {
     final path = APIPath.jobs(uid);
     final reference = FirebaseFirestore.instance.collection(path);
     final snapshot = reference.snapshots();
-    return snapshot.map((snapshot) => snapshot.docs.map((e) {
-          final data = e.data();
-          return data != null
-              ? Job(
-                  name: data['name'],
-                  ratePerHour: data['ratePerHour'],
-                )
-              : null;
-        }));
+    return snapshot.map((snapshot) => snapshot.docs.map(
+          (snapshot) {
+            final data = snapshot.data();
+            return data != null
+                ? Job(
+                    name: data['name'],
+                    ratePerHour: data['ratePerHour'],
+                  )
+                : null;
+          },
+        ).toList());
   }
 
   Future<void> _setData({String path, Map<String, dynamic> data}) async {
