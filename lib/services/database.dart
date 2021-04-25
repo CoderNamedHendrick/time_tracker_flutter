@@ -12,7 +12,7 @@ class FirestoreDatabase implements Database {
   FirestoreDatabase({@required this.uid}) : assert(uid != null);
   final String uid;
 
-  final _service = FirestoreService();
+  final _service = FirestoreService.instance;
 
   // create job implementation method.
   Future<void> createJob(Job job) => _service.setData(
