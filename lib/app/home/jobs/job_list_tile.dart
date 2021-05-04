@@ -11,6 +11,7 @@ class JobListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(job.name),
+      trailing: Icon(Icons.chevron_right),
       onTap: onTap,
     );
   }
