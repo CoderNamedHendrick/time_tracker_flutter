@@ -132,7 +132,7 @@ class _AddJobPageState extends State<AddJobPage> {
         ),
         focusNode: _ratePerHourFocusNode,
         textInputAction: TextInputAction.done,
-        onSaved: (value) => _ratePerHour = int.parse(value) ?? 0,
+        onSaved: (value) => _ratePerHour = int.tryParse(value) ?? 0,
       ),
     ];
   }
