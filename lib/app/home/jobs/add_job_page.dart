@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter/app/home/models/job.dart';
+import 'package:time_tracker_flutter/common_widgets/show_alert_dialog.dart';
+import 'package:time_tracker_flutter/common_widgets/show_exception_alert_dialog.dart';
 import 'package:time_tracker_flutter/services/database.dart';
 
 class AddJobPage extends StatefulWidget {
@@ -22,6 +25,8 @@ class AddJobPage extends StatefulWidget {
 
 class _AddJobPageState extends State<AddJobPage> {
   final _formKey = GlobalKey<FormState>();
+  final FocusNode _jobNameFocusNode = FocusNode();
+  final FocusNode _ratePerHourFocusNode = FocusNode();
 
   String _name;
   int _ratePerHour;
@@ -35,11 +40,30 @@ class _AddJobPageState extends State<AddJobPage> {
     return false;
   }
 
-  Future<void> _submit() async{
+  Future<void> _submit() async {
     if (_validateAndSaveForm()) {
-      final job = Job(name: _name, ratePerHour: _ratePerHour);
-      await widget.database.createJob(job);
-      Navigator.of(context).pop();
+      try {
+        final jobs = await widget.database.jobsStream().first;
+        final allNames = jobs.map((job) => job.name).toList();
+        if (allNames.contains(_name)) {
+          showAlertDialog(
+            context,
+            title: 'Name already used',
+            content: 'Please choose a different job name',
+            defaultActionText: 'OK',
+          );
+        } else {
+          final job = Job(name: _name, ratePerHour: _ratePerHour);
+          await widget.database.createJob(job);
+          Navigator.of(context).pop();
+        }
+      } on FirebaseException catch (e) {
+        showExceptionAlertDialog(
+          context,
+          title: 'Operation failed',
+          exception: e,
+        );
+      }
     }
   }
 
@@ -96,6 +120,8 @@ class _AddJobPageState extends State<AddJobPage> {
       TextFormField(
         decoration: InputDecoration(labelText: 'Job name'),
         validator: (value) => value.isNotEmpty ? null : 'Name can\'t be empty',
+        focusNode: _jobNameFocusNode,
+        textInputAction: TextInputAction.next,
         onSaved: (value) => _name = value,
       ),
       TextFormField(
@@ -104,6 +130,8 @@ class _AddJobPageState extends State<AddJobPage> {
           signed: false,
           decimal: false,
         ),
+        focusNode: _ratePerHourFocusNode,
+        textInputAction: TextInputAction.done,
         onSaved: (value) => _ratePerHour = int.parse(value) ?? 0,
       ),
     ];
