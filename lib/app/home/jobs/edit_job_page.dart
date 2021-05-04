@@ -34,6 +34,15 @@ class _EditJobPageState extends State<EditJobPage> {
   String _name;
   int _ratePerHour;
 
+  @override
+  void initState(){
+    super.initState();
+    if(widget.job != null){
+      _name = widget.job.name;
+      _ratePerHour = widget.job.ratePerHour;
+    }
+  }
+
   bool _validateAndSaveForm() {
     final form = _formKey.currentState;
     if (form.validate()) {
@@ -48,6 +57,9 @@ class _EditJobPageState extends State<EditJobPage> {
       try {
         final jobs = await widget.database.jobsStream().first;
         final allNames = jobs.map((job) => job.name).toList();
+        if(widget.job != null){
+          allNames.remove(widget.job.name);
+        }
         if (allNames.contains(_name)) {
           showAlertDialog(
             context,
@@ -56,8 +68,9 @@ class _EditJobPageState extends State<EditJobPage> {
             defaultActionText: 'OK',
           );
         } else {
-          final job = Job(name: _name, ratePerHour: _ratePerHour);
-          await widget.database.createJob(job);
+          final id = widget.job?.id ?? documentIdFromCurrentDate();
+          final job = Job(id:id, name: _name, ratePerHour: _ratePerHour);
+          await widget.database.setJob(job);
           Navigator.of(context).pop();
         }
       } on FirebaseException catch (e) {
@@ -122,6 +135,7 @@ class _EditJobPageState extends State<EditJobPage> {
     return [
       TextFormField(
         decoration: InputDecoration(labelText: 'Job name'),
+        initialValue: _name,
         validator: (value) => value.isNotEmpty ? null : 'Name can\'t be empty',
         focusNode: _jobNameFocusNode,
         textInputAction: TextInputAction.next,
@@ -129,6 +143,7 @@ class _EditJobPageState extends State<EditJobPage> {
       ),
       TextFormField(
         decoration: InputDecoration(labelText: 'Rate per hour'),
+        initialValue: _ratePerHour != null ? '$_ratePerHour' : null,
         keyboardType: TextInputType.numberWithOptions(
           signed: false,
           decimal: false,
