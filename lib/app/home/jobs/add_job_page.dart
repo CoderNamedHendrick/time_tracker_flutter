@@ -1,10 +1,17 @@
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:time_tracker_flutter/app/home/models/job.dart';
+import 'package:time_tracker_flutter/services/database.dart';
 
 class AddJobPage extends StatefulWidget {
+  const AddJobPage({Key key, @required this.database}) : super(key: key);
+  final Database database;
   static Future<void> show(BuildContext context) async {
+    final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => AddJobPage(),
+      builder: (context) => AddJobPage(
+        database: database,
+      ),
       fullscreenDialog: true,
     ));
   }
@@ -14,22 +21,26 @@ class AddJobPage extends StatefulWidget {
 }
 
 class _AddJobPageState extends State<AddJobPage> {
-
   final _formKey = GlobalKey<FormState>();
 
-  bool _validateAndSaveForm(){
+  String _name;
+  int _ratePerHour;
+
+  bool _validateAndSaveForm() {
     final form = _formKey.currentState;
-    if(form.validate()){
+    if (form.validate()) {
       form.save();
       return true;
     }
     return false;
   }
-  void _submit(){
-    if(_validateAndSaveForm()){
-      print('form saved');
+
+  Future<void> _submit() async{
+    if (_validateAndSaveForm()) {
+      final job = Job(name: _name, ratePerHour: _ratePerHour);
+      await widget.database.createJob(job);
+      Navigator.of(context).pop();
     }
-    // TODO: submit data to Firestore
   }
 
   @override
@@ -84,6 +95,8 @@ class _AddJobPageState extends State<AddJobPage> {
     return [
       TextFormField(
         decoration: InputDecoration(labelText: 'Job name'),
+        validator: (value) => value.isNotEmpty ? null : 'Name can\'t be empty',
+        onSaved: (value) => _name = value,
       ),
       TextFormField(
         decoration: InputDecoration(labelText: 'Rate per hour'),
@@ -91,6 +104,7 @@ class _AddJobPageState extends State<AddJobPage> {
           signed: false,
           decimal: false,
         ),
+        onSaved: (value) => _ratePerHour = int.parse(value) ?? 0,
       ),
     ];
   }
