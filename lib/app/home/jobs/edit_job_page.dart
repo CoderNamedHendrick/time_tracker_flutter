@@ -11,11 +11,12 @@ class EditJobPage extends StatefulWidget {
   final Database database;
   final Job job;
 
-  static Future<void> show(BuildContext context) async {
+  static Future<void> show(BuildContext context, {Job job}) async {
     final database = Provider.of<Database>(context, listen: false);
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => EditJobPage(
         database: database,
+        job: job,
       ),
       fullscreenDialog: true,
     ));
@@ -74,7 +75,7 @@ class _EditJobPageState extends State<EditJobPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 2.0,
-        title: Text('New Job'),
+        title: Text(widget.job == null ? 'New Job' : 'Edit job'),
         actions: [
           FlatButton(
             child: Text(
