@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:time_tracker_flutter/app/home/jobs/edit_job_page.dart';
 import 'package:time_tracker_flutter/app/home/jobs/empty_content.dart';
 import 'package:time_tracker_flutter/app/home/jobs/job_list_tile.dart';
+import 'package:time_tracker_flutter/app/home/jobs/list_item_builder.dart';
 import 'package:time_tracker_flutter/app/home/models/job.dart';
 import 'package:time_tracker_flutter/common_widgets/show_alert_dialog.dart';
 import 'package:time_tracker_flutter/common_widgets/show_exception_alert_dialog.dart';
@@ -64,25 +65,33 @@ class JobsPage extends StatelessWidget {
     return StreamBuilder<List<Job>>(
       stream: database.jobsStream(),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final jobs = snapshot.data;
-          if (jobs.isNotEmpty) {
-            final children = jobs
-                .map((job) => JobListTile(
-                      job: job,
-                      onTap: () => EditJobPage.show(context, job: job),
-                    ))
-                .toList();
-            return ListView(children: children);
-          }
-          return EmptyContent();
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Text('Some error occured'),
-          );
-        }
-        return Center(child: CircularProgressIndicator());
+        return ListItemBuilder<Job>(
+          snapshot: snapshot,
+          itemBuilder: (context, job) =>
+            JobListTile(
+            job: job,
+            onTap: () => EditJobPage.show(context, job: job),
+          )
+        );
+        // if (snapshot.hasData) {
+        //   final jobs = snapshot.data;
+        //   if (jobs.isNotEmpty) {
+        //     final children = jobs
+        //         .map((job) => JobListTile(
+        //               job: job,
+        //               onTap: () => EditJobPage.show(context, job: job),
+        //             ))
+        //         .toList();
+        //     return ListView(children: children);
+        //   }
+        //   return EmptyContent();
+        // }
+        // if (snapshot.hasError) {
+        //   return Center(
+        //     child: Text('Some error occured'),
+        //   );
+        // }
+        // return Center(child: CircularProgressIndicator());
       },
     );
   }
