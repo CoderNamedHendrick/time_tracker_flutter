@@ -27,10 +27,12 @@ class FirestoreDatabase implements Database {
         data: job.toMap(),
       );
 
+  // deleting jobs from the database
   @override
   Future<void> deleteJob(Job job) => _service.deleteData(
         path: APIPath.job(uid, job.id),
       );
+
   // reading jobs from firestore
   @override
   Stream<List<Job>> jobsStream() => _service.collectionStream(
