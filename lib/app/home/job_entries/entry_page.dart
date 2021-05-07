@@ -82,37 +82,44 @@ class _EntryPageState extends State<EntryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 2.0,
-        title: Text(widget.job.name),
-        actions: <Widget>[
-          FlatButton(
-            child: Text(
-              widget.entry != null ? 'Update' : 'Create',
-              style: TextStyle(fontSize: 18.0, color: Colors.white),
-            ),
-            onPressed: () => _setEntryAndDismiss(context),
-          )
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildStartDate(),
-              _buildEndDate(),
-              SizedBox(height: 8.0),
-              _buildDuration(),
-              SizedBox(height: 8.0),
-              _buildComment(),
+    return StreamBuilder<Job>(
+      stream: widget.database.jobStream(jobId: widget.job.id),
+      builder: (context, snapshot) {
+        final job = snapshot.data;
+        final jobName = job?.name ?? '';
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 2.0,
+            title: Text(jobName),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  widget.entry != null ? 'Update' : 'Create',
+                  style: TextStyle(fontSize: 18.0, color: Colors.white),
+                ),
+                onPressed: () => _setEntryAndDismiss(context),
+              )
             ],
           ),
-        ),
-      ),
+          body: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _buildStartDate(),
+                  _buildEndDate(),
+                  SizedBox(height: 8.0),
+                  _buildDuration(),
+                  SizedBox(height: 8.0),
+                  _buildComment(),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
     );
   }
 
